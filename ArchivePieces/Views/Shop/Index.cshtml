@@ -1,0 +1,154 @@
+@model ArchivePieces.ViewModels.ProductListViewModel
+@{
+    ViewData["Title"] = "Shop";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container-fluid px-4 py-4">
+    <div class="row g-4">
+
+        <!-- ── SIDEBAR ──────────────────────────────────────────────── -->
+        <div class="col-12 col-lg-2">
+            <div class="ap-filter-sidebar">
+                <div class="ap-filter-heading">FILTER</div>
+
+                <!-- Categories -->
+                <div class="ap-filter-section">
+                    <div class="ap-filter-label">CATEGORY</div>
+                    <a asp-controller="Shop" asp-action="Index"
+                       class="ap-filter-link @(string.IsNullOrEmpty(Model.SelectedCategory) ? "active" : "")">
+                        ALL
+                    </a>
+                    @foreach (var cat in Model.Categories)
+                    {
+                        <a asp-controller="Shop" asp-action="Index"
+                           asp-route-category="@cat.Slug"
+                           asp-route-size="@Model.SelectedSize"
+                           asp-route-sortBy="@Model.SortBy"
+                           class="ap-filter-link @(Model.SelectedCategory == cat.Slug ? "active" : "")">
+                            @cat.Name
+                        </a>
+                    }
+                </div>
+
+                <!-- Sizes -->
+                <div class="ap-filter-section">
+                    <div class="ap-filter-label">SIZE</div>
+                    <div class="ap-size-filter">
+                        @foreach (var s in new[] { "XS", "S", "M", "L", "XL", "XXL" })
+                        {
+                            <a asp-controller="Shop" asp-action="Index"
+                               asp-route-category="@Model.SelectedCategory"
+                               asp-route-size="@(Model.SelectedSize == s ? null : s)"
+                               asp-route-sortBy="@Model.SortBy"
+                               class="ap-size-btn @(Model.SelectedSize == s ? "active" : "")">
+                                @s
+                            </a>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── PRODUCT GRID ──────────────────────────────────────────── -->
+        <div class="col-12 col-lg-10">
+
+            <!-- Toolbar -->
+            <div class="ap-shop-toolbar">
+                <span class="ap-count">
+                    @Model.TotalCount PRODUCT@(Model.TotalCount != 1 ? "S" : "")
+                    @if (!string.IsNullOrEmpty(Model.SelectedCategory))
+                    {
+                        <span> — @Model.SelectedCategory.ToUpperInvariant()</span>
+                    }
+                </span>
+                <div class="ap-sort">
+                    <select class="ap-select" id="sortSelect">
+                        @{
+                            var sortNewest = Model.SortBy == "newest";
+                            var sortAsc = Model.SortBy == "price-asc";
+                            var sortDesc = Model.SortBy == "price-desc";
+                        }
+                        <option value="newest" selected="@sortNewest">NEWEST</option>
+                        <option value="price-asc" selected="@sortAsc">PRICE: LOW–HIGH</option>
+                        <option value="price-desc" selected="@sortDesc">PRICE: HIGH–LOW</option>
+                    </select>
+                </div>
+            </div>
+
+            @if (!Model.Products.Any())
+            {
+                <div class="ap-empty py-5 text-center">
+                    <i class="bi bi-inbox fs-1 d-block mb-3"></i>
+                    <p>No products found.</p>
+                    <a asp-controller="Shop" asp-action="Index" class="btn btn-outline-light mt-2">CLEAR FILTERS</a>
+                </div>
+            }
+            else
+            {
+                <div class="ap-product-grid ap-product-grid--shop">
+                    @foreach (var p in Model.Products)
+                    {
+                        <a asp-controller="Product" asp-action="Detail"
+                           asp-route-slug="@p.Slug" class="ap-product-card">
+                            <div class="ap-product-img-wrap">
+                                @if (!string.IsNullOrEmpty(p.PrimaryImagePath))
+                                {
+                                    <img src="@p.PrimaryImagePath" alt="@p.Name"
+                                         class="ap-product-img" loading="lazy" />
+                                }
+                                else
+                                {
+                                    <div class="ap-product-img-placeholder">
+                                        <i class="bi bi-image"></i>
+                                    </div>
+                                }
+                                @if (p.IsSoldOut)
+                                {
+                                    <span class="ap-badge ap-badge--sold">SOLD OUT</span>
+                                }
+                                else if (p.IsNew)
+                                {
+                                    <span class="ap-badge ap-badge--new">NEW</span>
+                                }
+                            </div>
+                            <div class="ap-product-info">
+                                <span class="ap-product-name">@p.Name</span>
+                                <span class="ap-product-price">R @p.Price.ToString("N2")</span>
+                            </div>
+                        </a>
+                    }
+                </div>
+
+                <!-- Pagination -->
+                @if (Model.TotalPages > 1)
+                {
+                    <nav class="ap-pagination mt-5">
+                        @for (int i = 1; i <= Model.TotalPages; i++)
+                        {
+                            <a asp-controller="Shop" asp-action="Index"
+                               asp-route-category="@Model.SelectedCategory"
+                               asp-route-size="@Model.SelectedSize"
+                               asp-route-sortBy="@Model.SortBy"
+                               asp-route-page="@i"
+                               class="ap-page-btn @(Model.Page == i ? "active" : "")">
+                                @i
+                            </a>
+                        }
+                    </nav>
+                }
+            }
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+document.getElementById('sortSelect')?.addEventListener('change', function () {
+    const url = new URL(window.location.href);
+    url.searchParams.set('sortBy', this.value);
+    url.searchParams.set('page', '1');
+    window.location.href = url.toString();
+});
+</script>
+}

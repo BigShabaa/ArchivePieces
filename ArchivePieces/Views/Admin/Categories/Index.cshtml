@@ -1,0 +1,55 @@
+@* Admin/Categories/Index.cshtml *@
+@model List<ArchivePieces.Models.Category>
+@{
+    ViewData["Title"] = "Categories";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="d-flex justify-content-end mb-4">
+    <a href="/admin/categories/create" class="btn btn-primary">
+        <i class="bi bi-plus me-1"></i> ADD CATEGORY
+    </a>
+</div>
+
+<div class="ap-admin-card">
+    <div class="table-responsive">
+        <table class="ap-table">
+            <thead>
+                <tr>
+                    <th>ORDER</th>
+                    <th>NAME</th>
+                    <th>SLUG</th>
+                    <th>VISIBLE</th>
+                    <th>ACTIONS</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var c in Model)
+                {
+                    <tr>
+                        <td class="text-muted">@c.DisplayOrder</td>
+                        <td class="fw-600">@c.Name</td>
+                        <td class="ap-muted small">@c.Slug</td>
+                        <td>
+                            <span class="ap-status @(c.IsVisible ? "ap-status--delivered" : "ap-status--cancelled")">
+                                @(c.IsVisible ? "VISIBLE" : "HIDDEN")
+                            </span>
+                        </td>
+                        <td>
+                            <div class="d-flex gap-2">
+                                <a href="/admin/categories/edit/@c.Id"
+                                   class="btn btn-sm btn-outline-light">EDIT</a>
+                                <form asp-controller="AdminCategory" asp-action="Delete"
+                                      asp-route-id="@c.Id" method="post"
+                                      onsubmit="return confirm('Delete this category?')">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">DELETE</button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

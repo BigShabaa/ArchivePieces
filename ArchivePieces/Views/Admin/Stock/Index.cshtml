@@ -1,0 +1,125 @@
+@model ArchivePieces.ViewModels.Admin.StockViewModel
+@{
+    ViewData["Title"] = "Stock Management";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<form method="get" class="d-flex gap-2 mb-4">
+    <input type="text" name="search" value="@Model.Search"
+           class="ap-input" placeholder="Search by product name..." style="width:300px" />
+    <button type="submit" class="btn btn-outline-light">SEARCH</button>
+</form>
+
+<div class="ap-admin-card">
+    <div class="ap-admin-card-header">
+        <span>STOCK LEVELS — @Model.Rows.Count VARIANTS</span>
+        <span class="ap-muted small">Click a stock value to edit inline</span>
+    </div>
+    <div class="table-responsive">
+        <table class="ap-table" id="stockTable">
+            <thead>
+                <tr>
+                    <th>PRODUCT</th>
+                    <th>SIZE</th>
+                    <th>STOCK</th>
+                    <th>STATUS</th>
+                    <th>ACTION</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var row in Model.Rows)
+                {
+                    <tr class="@(row.StockQuantity == 0 ? "ap-row--oos" : row.StockQuantity <= 3 ? "ap-row--low" : "")">
+                        <td>
+                            <a href="/admin/products/edit/@row.ProductId"
+                               class="ap-table-link">@row.ProductName</a>
+                        </td>
+                        <td class="fw-600">@row.Size</td>
+                        <td>
+                            <span class="ap-stock-display" data-id="@row.VariantId">
+                                @row.StockQuantity
+                            </span>
+                            <input type="number"
+                                   class="ap-input ap-input--sm ap-stock-input d-none"
+                                   data-id="@row.VariantId"
+                                   value="@row.StockQuantity"
+                                   min="0" style="width:80px" />
+                        </td>
+                        <td>
+                            @if (row.StockQuantity == 0)
+                            {
+                                <span class="ap-status ap-status--cancelled">OUT OF STOCK</span>
+                            }
+                            else if (row.StockQuantity <= 3)
+                            {
+                                <span class="ap-status ap-status--processing">LOW STOCK</span>
+                            }
+                            else
+                            {
+                                <span class="ap-status ap-status--delivered">IN STOCK</span>
+                            }
+                        </td>
+                        <td>
+                            <button type="button"
+                                    class="btn btn-sm btn-outline-light ap-edit-stock-btn"
+                                    data-id="@row.VariantId">
+                                EDIT
+                            </button>
+                            <button type="button"
+                                    class="btn btn-sm btn-primary ap-save-stock-btn d-none"
+                                    data-id="@row.VariantId">
+                                SAVE
+                            </button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+document.querySelectorAll('.ap-edit-stock-btn').forEach(btn => {
+    btn.addEventListener('click', function () {
+        const id = this.dataset.id;
+        document.querySelector(`.ap-stock-display[data-id="${id}"]`).classList.add('d-none');
+        document.querySelector(`.ap-stock-input[data-id="${id}"]`).classList.remove('d-none');
+        this.classList.add('d-none');
+        document.querySelector(`.ap-save-stock-btn[data-id="${id}"]`).classList.remove('d-none');
+    });
+});
+
+document.querySelectorAll('.ap-save-stock-btn').forEach(btn => {
+    btn.addEventListener('click', async function () {
+        const id = this.dataset.id;
+        const input = document.querySelector(`.ap-stock-input[data-id="${id}"]`);
+        const stock = parseInt(input.value);
+        const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
+
+        const formData = new FormData();
+        formData.append('variantId', id);
+        formData.append('stock', stock);
+        if (token) formData.append('__RequestVerificationToken', token);
+
+        const resp = await fetch('/admin/stock/update', { method: 'POST', body: formData });
+
+        if (resp.ok) {
+            const display = document.querySelector(`.ap-stock-display[data-id="${id}"]`);
+            display.textContent = stock;
+            display.classList.remove('d-none');
+            input.classList.add('d-none');
+            this.classList.add('d-none');
+            document.querySelector(`.ap-edit-stock-btn[data-id="${id}"]`).classList.remove('d-none');
+
+            // Update row colour
+            const row = display.closest('tr');
+            row.classList.remove('ap-row--oos', 'ap-row--low');
+            if (stock === 0) row.classList.add('ap-row--oos');
+            else if (stock <= 3) row.classList.add('ap-row--low');
+        }
+    });
+});
+</script>
+@Html.AntiForgeryToken()
+}

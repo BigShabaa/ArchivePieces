@@ -1,0 +1,98 @@
+@* Admin/Orders/Index.cshtml *@
+@model ArchivePieces.ViewModels.Admin.OrderListViewModel
+@{
+    ViewData["Title"] = "Orders";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<!-- Filters -->
+<form method="get" class="ap-admin-card p-4 mb-4">
+    <div class="row g-3 align-items-end">
+        <div class="col-12 col-md-4">
+            <label class="ap-label">SEARCH</label>
+            <input type="text" name="search" value="@Model.Search"
+                   class="ap-input" placeholder="Order # or customer name..." />
+        </div>
+        <div class="col-6 col-md-2">
+            <label class="ap-label">STATUS</label>
+            <select name="status" class="ap-select ap-input">
+                <option value="">All</option>
+                @foreach (var s in Enum.GetValues<ArchivePieces.Models.OrderStatus>())
+                {
+                    var isSelected = Model.StatusFilter == s.ToString();
+                    <option value="@s" selected="@isSelected">@s</option>
+                }
+            </select>
+        </div>
+        <div class="col-6 col-md-2">
+            <label class="ap-label">FROM</label>
+            <input type="date" name="from" value="@Model.From?.ToString("yyyy-MM-dd")"
+                   class="ap-input" />
+        </div>
+        <div class="col-6 col-md-2">
+            <label class="ap-label">TO</label>
+            <input type="date" name="to" value="@Model.To?.ToString("yyyy-MM-dd")"
+                   class="ap-input" />
+        </div>
+        <div class="col-6 col-md-2">
+            <button type="submit" class="btn btn-primary w-100">FILTER</button>
+        </div>
+    </div>
+</form>
+
+<div class="ap-admin-card">
+    <div class="table-responsive">
+        <table class="ap-table">
+            <thead>
+                <tr>
+                    <th>ORDER #</th>
+                    <th>CUSTOMER</th>
+                    <th>EMAIL</th>
+                    <th>DATE</th>
+                    <th>ITEMS</th>
+                    <th>TOTAL</th>
+                    <th>STATUS</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (!Model.Orders.Any())
+                {
+                    <tr>
+                        <td colspan="8" class="text-center ap-muted py-4">No orders found.</td>
+                    </tr>
+                }
+                @foreach (var o in Model.Orders)
+                {
+                    <tr>
+                        <td class="ap-order-num-cell">@o.OrderNumber</td>
+                        <td class="fw-600">@o.CustomerName</td>
+                        <td class="ap-muted small">@o.CustomerEmail</td>
+                        <td class="ap-muted">@o.CreatedAt.ToString("dd MMM yyyy")</td>
+                        <td>@o.Items.Count</td>
+                        <td>R @o.TotalAmount.ToString("N2")</td>
+                        <td>
+                            <span class="ap-status ap-status--@o.Status.ToString().ToLower()">
+                                @o.Status
+                            </span>
+                        </td>
+                        <td>
+                            <a href="/admin/orders/@o.Id" class="btn btn-sm btn-outline-light">VIEW</a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@if (Model.TotalPages > 1)
+{
+    <nav class="ap-pagination mt-4">
+        @for (int i = 1; i <= Model.TotalPages; i++)
+        {
+            <a href="/admin/orders?page=@i&status=@Model.StatusFilter&search=@Model.Search"
+               class="ap-page-btn @(Model.Page == i ? "active" : "")">@i</a>
+        }
+    </nav>
+}

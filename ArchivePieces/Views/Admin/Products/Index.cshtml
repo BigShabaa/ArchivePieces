@@ -1,0 +1,100 @@
+@* Admin/Products/Index.cshtml *@
+@model List<ArchivePieces.Models.Product>
+@{
+    ViewData["Title"] = "Products";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <form class="d-flex gap-2" method="get">
+        <input type="text" name="search" value="@ViewBag.Search"
+               class="ap-input" placeholder="Search products..." style="width:260px" />
+        <button type="submit" class="btn btn-outline-light">SEARCH</button>
+    </form>
+    <a href="/admin/products/create" class="btn btn-primary">
+        <i class="bi bi-plus me-1"></i> ADD PRODUCT
+    </a>
+</div>
+
+<div class="ap-admin-card">
+    <div class="table-responsive">
+        <table class="ap-table">
+            <thead>
+                <tr>
+                    <th>IMAGE</th>
+                    <th>NAME</th>
+                    <th>CATEGORY</th>
+                    <th>PRICE</th>
+                    <th>STOCK</th>
+                    <th>STATUS</th>
+                    <th>ACTIONS</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var p in Model)
+                {
+                    <tr>
+                        <td>
+                            @if (!string.IsNullOrEmpty(p.PrimaryImagePath))
+                            {
+                                <img src="@p.PrimaryImagePath" class="ap-table-thumb" alt="@p.Name" />
+                            }
+                            else
+                            {
+                                <div class="ap-table-thumb-empty"><i class="bi bi-image"></i></div>
+                            }
+                        </td>
+                        <td>
+                            <div class="fw-600">@p.Name</div>
+                            @if (p.IsFeatured)
+                            {
+                                <span class="ap-tag">FEATURED</span>
+                            }
+                        </td>
+                        <td class="text-muted">@p.Category?.Name</td>
+                        <td>R @p.Price.ToString("N2")</td>
+                        <td>
+                            @{
+                                var total = p.Variants.Sum(v => v.StockQuantity);
+                            }
+                            <span class="@(total == 0 ? "text-danger" : total <= 5 ? "ap-warn" : "")">
+                                @total units
+                            </span>
+                        </td>
+                        <td>
+                            <span class="ap-status @(p.IsActive ? "ap-status--delivered" : "ap-status--cancelled")">
+                                @(p.IsActive ? "ACTIVE" : "INACTIVE")
+                            </span>
+                        </td>
+                        <td>
+                            <div class="d-flex gap-2">
+                                <a href="/admin/products/edit/@p.Id"
+                                   class="btn btn-sm btn-outline-light">EDIT</a>
+                                <form asp-controller="AdminProduct" asp-action="Delete"
+                                      asp-route-id="@p.Id" method="post"
+                                      onsubmit="return confirm('Deactivate this product?')">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">
+                                        DEACTIVATE
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Pagination -->
+@if ((int)ViewBag.TotalPages > 1)
+{
+    <nav class="ap-pagination mt-4">
+        @for (int i = 1; i <= (int)ViewBag.TotalPages; i++)
+        {
+            <a href="/admin/products?page=@i&search=@ViewBag.Search"
+               class="ap-page-btn @((int)ViewBag.Page == i ? "active" : "")">@i</a>
+        }
+    </nav>
+}

@@ -1,0 +1,89 @@
+@model ArchivePieces.ViewModels.CheckoutViewModel
+@{
+    ViewData["Title"] = "Checkout";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container-fluid px-4 py-5">
+    <h1 class="ap-page-title mb-4">CHECKOUT</h1>
+
+    <form asp-action="PlaceOrder" method="post">
+        @Html.AntiForgeryToken()
+        <div class="row g-5">
+
+            <!-- ── SHIPPING DETAILS ──────────────────────────────────── -->
+            <div class="col-12 col-lg-7">
+                <div class="ap-checkout-section">
+                    <div class="ap-checkout-heading">SHIPPING INFORMATION</div>
+
+                    <div class="mb-3">
+                        <label class="ap-label">FULL NAME</label>
+                        <input asp-for="FullName" class="ap-input" placeholder="Your full name" />
+                        <span asp-validation-for="FullName" class="ap-field-error"></span>
+                    </div>
+                    <div class="mb-3">
+                        <label class="ap-label">EMAIL ADDRESS</label>
+                        <input asp-for="Email" class="ap-input" placeholder="your@email.com" />
+                        <span asp-validation-for="Email" class="ap-field-error"></span>
+                    </div>
+                    <div class="mb-3">
+                        <label class="ap-label">STREET ADDRESS</label>
+                        <input asp-for="Address" class="ap-input" placeholder="123 Street Name" />
+                        <span asp-validation-for="Address" class="ap-field-error"></span>
+                    </div>
+                    <div class="row g-3 mb-3">
+                        <div class="col-6">
+                            <label class="ap-label">CITY</label>
+                            <input asp-for="City" class="ap-input" placeholder="City" />
+                            <span asp-validation-for="City" class="ap-field-error"></span>
+                        </div>
+                        <div class="col-6">
+                            <label class="ap-label">POSTAL CODE</label>
+                            <input asp-for="PostalCode" class="ap-input" placeholder="0000" />
+                            <span asp-validation-for="PostalCode" class="ap-field-error"></span>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="ap-label">COUNTRY</label>
+                        <input asp-for="Country" class="ap-input" placeholder="South Africa" />
+                        <span asp-validation-for="Country" class="ap-field-error"></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ── ORDER SUMMARY ──────────────────────────────────────── -->
+            <div class="col-12 col-lg-5">
+                <div class="ap-order-summary ap-order-summary--checkout">
+                    <div class="ap-summary-title">YOUR ORDER</div>
+
+                    @foreach (var item in Model.Cart.Items)
+                    {
+                        <div class="ap-summary-item">
+                            <div class="ap-summary-item-info">
+                                <span class="ap-summary-item-name">@item.ProductName</span>
+                                <span class="ap-summary-item-meta">@item.Size × @item.Quantity</span>
+                            </div>
+                            <span>R @item.LineTotal.ToString("N2")</span>
+                        </div>
+                    }
+
+                    <div class="ap-summary-divider"></div>
+                    <div class="ap-summary-total">
+                        <span>TOTAL</span>
+                        <span>R @Model.Cart.Subtotal.ToString("N2")</span>
+                    </div>
+
+                    <div asp-validation-summary="ModelOnly" class="ap-field-error mt-3"></div>
+
+                    <button type="submit" class="btn btn-primary w-100 mt-4 ap-btn-lg">
+                        PLACE ORDER
+                    </button>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

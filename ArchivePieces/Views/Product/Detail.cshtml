@@ -1,0 +1,227 @@
+@model ArchivePieces.ViewModels.ProductDetailViewModel
+@{
+    var p = Model.Product;
+    ViewData["Title"] = p.Name;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="ap-product-detail container-fluid px-4 py-5">
+    <div class="row g-5">
+
+        <!-- ── IMAGES ────────────────────────────────────────────────── -->
+        <div class="col-12 col-lg-7">
+            <div class="ap-detail-images">
+                <div class="ap-main-img-wrap" id="mainImgWrap">
+                    @if (p.Images.Any())
+                    {
+                        <img src="@p.Images.First().ImagePath"
+                             alt="@p.Name" class="ap-main-img" id="mainImg" />
+                    }
+                    else
+                    {
+                        <div class="ap-product-img-placeholder ap-placeholder-lg">
+                            <i class="bi bi-image"></i>
+                        </div>
+                    }
+
+                    @if (p.IsSoldOut)
+                    {
+                        <span class="ap-badge ap-badge--sold ap-badge--lg">SOLD OUT</span>
+                    }
+                    else if (p.IsNew)
+                    {
+                        <span class="ap-badge ap-badge--new ap-badge--lg">NEW</span>
+                    }
+                </div>
+
+                @if (p.Images.Count > 1)
+                {
+                    <div class="ap-thumb-strip">
+                        @foreach (var img in p.Images)
+                        {
+                            <img src="@img.ImagePath" alt="@p.Name"
+                                 class="ap-thumb @(img == p.Images.First() ? "active" : "")"
+                                 onclick="setMainImage(this)" />
+                        }
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- ── PRODUCT INFO ──────────────────────────────────────────── -->
+        <div class="col-12 col-lg-5">
+            <div class="ap-detail-info">
+
+                <!-- Breadcrumb -->
+                <div class="ap-breadcrumb">
+                    <a asp-controller="Shop" asp-action="Index">SHOP</a>
+                    <span> / </span>
+                    <a asp-controller="Shop" asp-action="Index"
+                       asp-route-category="@p.Category.Slug">@p.Category.Name</a>
+                </div>
+
+                <h1 class="ap-detail-name">@p.Name</h1>
+                <div class="ap-detail-price">R @p.Price.ToString("N2")</div>
+
+                @if (!p.IsSoldOut)
+                {
+                    <!-- Add to cart form -->
+                    <form asp-controller="Cart" asp-action="Add" method="post" class="ap-atc-form">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="productId" value="@p.Id" />
+
+                        <!-- Size selector -->
+                        <div class="ap-size-label">SELECT SIZE</div>
+                        <div class="ap-sizes" id="sizeSelector">
+                            @foreach (var v in p.Variants.OrderBy(v => v.Size))
+                            {
+                                <button type="button"
+                                        class="ap-size-option @(v.IsOutOfStock ? "sold-out" : "")"
+                                        data-size="@v.Size"
+                                        data-stock="@v.StockQuantity"
+                                        @(v.IsOutOfStock ? "disabled" : "")>
+                                    @v.Size
+                                </button>
+                            }
+                        </div>
+                        <input type="hidden" name="size" id="selectedSize" />
+
+                        <!-- Stock indicator -->
+                        <div class="ap-stock-indicator" id="stockIndicator" style="display:none"></div>
+
+                        <!-- Quantity -->
+                        <div class="ap-qty-wrap">
+                            <div class="ap-qty-label">QUANTITY</div>
+                            <div class="ap-qty-control">
+                                <button type="button" class="ap-qty-btn" id="qtyMinus">−</button>
+                                <input type="number" name="quantity" id="qty"
+                                       value="1" min="1" max="10" readonly class="ap-qty-input" />
+                                <button type="button" class="ap-qty-btn" id="qtyPlus">+</button>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary ap-btn-atc" id="addToCartBtn" disabled>
+                            SELECT A SIZE
+                        </button>
+                    </form>
+                }
+                else
+                {
+                    <div class="ap-sizes">
+                        @foreach (var v in p.Variants.OrderBy(v => v.Size))
+                        {
+                            <button class="ap-size-option sold-out" disabled>@v.Size</button>
+                        }
+                    </div>
+                    <button class="btn btn-primary ap-btn-atc" disabled>SOLD OUT</button>
+                }
+
+                <!-- Description -->
+                @if (!string.IsNullOrWhiteSpace(p.Description))
+                {
+                    <div class="ap-detail-desc mt-4">
+                        <div class="ap-detail-desc-toggle" id="descToggle">
+                            PRODUCT DETAILS <i class="bi bi-chevron-down"></i>
+                        </div>
+                        <div class="ap-detail-desc-body" id="descBody">
+                            <p>@p.Description</p>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- ── RELATED PRODUCTS ──────────────────────────────────────────── -->
+    @if (Model.RelatedProducts.Any())
+    {
+        <div class="ap-section mt-5 pt-4">
+            <div class="ap-section-header">
+                <h2 class="ap-section-title">YOU MAY ALSO LIKE</h2>
+            </div>
+            <div class="ap-product-grid ap-product-grid--related">
+                @foreach (var rp in Model.RelatedProducts)
+                {
+                    <a asp-controller="Product" asp-action="Detail"
+                       asp-route-slug="@rp.Slug" class="ap-product-card">
+                        <div class="ap-product-img-wrap">
+                            @if (!string.IsNullOrEmpty(rp.PrimaryImagePath))
+                            {
+                                <img src="@rp.PrimaryImagePath" alt="@rp.Name"
+                                     class="ap-product-img" loading="lazy" />
+                            }
+                            else
+                            {
+                                <div class="ap-product-img-placeholder"><i class="bi bi-image"></i></div>
+                            }
+                            @if (rp.IsSoldOut)
+                            {
+                                <span class="ap-badge ap-badge--sold">SOLD OUT</span>
+                            }
+                        </div>
+                        <div class="ap-product-info">
+                            <span class="ap-product-name">@rp.Name</span>
+                            <span class="ap-product-price">R @rp.Price.ToString("N2")</span>
+                        </div>
+                    </a>
+                }
+            </div>
+        </div>
+    }
+</div>
+
+@section Scripts {
+<script>
+// Thumbnail switcher
+function setMainImage(thumb) {
+    document.getElementById('mainImg').src = thumb.src;
+    document.querySelectorAll('.ap-thumb').forEach(t => t.classList.remove('active'));
+    thumb.classList.add('active');
+}
+
+// Size selector
+const sizeOptions = document.querySelectorAll('.ap-size-option:not([disabled])');
+const selectedSizeInput = document.getElementById('selectedSize');
+const addToCartBtn = document.getElementById('addToCartBtn');
+const stockIndicator = document.getElementById('stockIndicator');
+const qtyInput = document.getElementById('qty');
+
+sizeOptions.forEach(btn => {
+    btn.addEventListener('click', () => {
+        sizeOptions.forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+        selectedSizeInput.value = btn.dataset.size;
+        addToCartBtn.disabled = false;
+        addToCartBtn.textContent = 'ADD TO CART';
+
+        const stock = parseInt(btn.dataset.stock);
+        if (stock <= 3) {
+            stockIndicator.style.display = 'block';
+            stockIndicator.textContent = `LOW STOCK — ${stock} LEFT`;
+        } else {
+            stockIndicator.style.display = 'none';
+        }
+        qtyInput.max = stock;
+        if (parseInt(qtyInput.value) > stock) qtyInput.value = stock;
+    });
+});
+
+// Quantity
+document.getElementById('qtyMinus')?.addEventListener('click', () => {
+    const v = parseInt(qtyInput.value);
+    if (v > 1) qtyInput.value = v - 1;
+});
+document.getElementById('qtyPlus')?.addEventListener('click', () => {
+    const v = parseInt(qtyInput.value);
+    const max = parseInt(qtyInput.max) || 10;
+    if (v < max) qtyInput.value = v + 1;
+});
+
+// Description accordion
+document.getElementById('descToggle')?.addEventListener('click', () => {
+    document.getElementById('descBody').classList.toggle('open');
+    document.querySelector('#descToggle .bi').classList.toggle('bi-chevron-up');
+    document.querySelector('#descToggle .bi').classList.toggle('bi-chevron-down');
+});
+</script>
+}

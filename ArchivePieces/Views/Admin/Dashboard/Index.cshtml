@@ -1,0 +1,87 @@
+@model ArchivePieces.ViewModels.Admin.DashboardViewModel
+@{
+    ViewData["Title"] = "Dashboard";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<!-- ── STAT CARDS ────────────────────────────────────────────────── -->
+<div class="row g-4 mb-5">
+    <div class="col-6 col-xl-3">
+        <div class="ap-stat-card">
+            <div class="ap-stat-icon"><i class="bi bi-box-seam"></i></div>
+            <div class="ap-stat-value">@Model.TotalProducts</div>
+            <div class="ap-stat-label">ACTIVE PRODUCTS</div>
+        </div>
+    </div>
+    <div class="col-6 col-xl-3">
+        <div class="ap-stat-card">
+            <div class="ap-stat-icon"><i class="bi bi-receipt"></i></div>
+            <div class="ap-stat-value">@Model.TotalOrders</div>
+            <div class="ap-stat-label">TOTAL ORDERS</div>
+        </div>
+    </div>
+    <div class="col-6 col-xl-3">
+        <div class="ap-stat-card ap-stat-card--accent">
+            <div class="ap-stat-icon"><i class="bi bi-clock-history"></i></div>
+            <div class="ap-stat-value">@Model.PendingOrders</div>
+            <div class="ap-stat-label">PENDING ORDERS</div>
+        </div>
+    </div>
+    <div class="col-6 col-xl-3">
+        <div class="ap-stat-card ap-stat-card--warn">
+            <div class="ap-stat-icon"><i class="bi bi-exclamation-triangle"></i></div>
+            <div class="ap-stat-value">@Model.OutOfStockVariants</div>
+            <div class="ap-stat-label">OUT OF STOCK</div>
+        </div>
+    </div>
+</div>
+
+<!-- ── QUICK ACTIONS ──────────────────────────────────────────────── -->
+<div class="d-flex gap-3 mb-5 flex-wrap">
+    <a href="/admin/products/create" class="btn btn-primary">
+        <i class="bi bi-plus me-1"></i> ADD PRODUCT
+    </a>
+    <a href="/admin/orders" class="btn btn-outline-light">
+        <i class="bi bi-receipt me-1"></i> VIEW ORDERS
+    </a>
+    <a href="/admin/stock" class="btn btn-outline-light">
+        <i class="bi bi-layers me-1"></i> MANAGE STOCK
+    </a>
+</div>
+
+<!-- ── RECENT ORDERS ──────────────────────────────────────────────── -->
+<div class="ap-admin-card">
+    <div class="ap-admin-card-header">
+        <span>RECENT ORDERS</span>
+        <a href="/admin/orders" class="ap-admin-card-link">View all →</a>
+    </div>
+    <div class="table-responsive">
+        <table class="ap-table">
+            <thead>
+                <tr>
+                    <th>ORDER</th>
+                    <th>CUSTOMER</th>
+                    <th>DATE</th>
+                    <th>ITEMS</th>
+                    <th>TOTAL</th>
+                    <th>STATUS</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var o in Model.RecentOrders)
+                {
+                    <tr>
+                        <td class="ap-order-num-cell">@o.OrderNumber</td>
+                        <td>@o.CustomerName</td>
+                        <td class="text-muted">@o.CreatedAt.ToString("dd MMM yyyy")</td>
+                        <td>@o.Items.Count</td>
+                        <td>R @o.TotalAmount.ToString("N2")</td>
+                        <td><span class="ap-status ap-status--@o.Status.ToString().ToLower()">@o.Status</span></td>
+                        <td><a href="/admin/orders/@o.Id" class="ap-table-link">View</a></td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

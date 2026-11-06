@@ -1,0 +1,46 @@
+@* Account/Login.cshtml *@
+@model ArchivePieces.ViewModels.LoginViewModel
+@{
+    ViewData["Title"] = "Sign In";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="ap-auth-page">
+    <div class="ap-auth-box">
+        <div class="ap-auth-brand">ARCHIVE PIECES</div>
+        <h1 class="ap-auth-title">SIGN IN</h1>
+
+        <form asp-action="Login" method="post">
+            @Html.AntiForgeryToken()
+            <input type="hidden" asp-for="ReturnUrl" />
+
+            <div asp-validation-summary="ModelOnly" class="ap-field-error mb-3"></div>
+
+            <div class="mb-3">
+                <label class="ap-label">EMAIL</label>
+                <input asp-for="Email" class="ap-input" placeholder="your@email.com" autocomplete="email" />
+                <span asp-validation-for="Email" class="ap-field-error"></span>
+            </div>
+            <div class="mb-3">
+                <label class="ap-label">PASSWORD</label>
+                <input asp-for="Password" class="ap-input" type="password" placeholder="••••••••" />
+                <span asp-validation-for="Password" class="ap-field-error"></span>
+            </div>
+            <div class="mb-4 form-check">
+                <input asp-for="RememberMe" class="form-check-input ap-check" />
+                <label class="form-check-label ap-muted" asp-for="RememberMe">Remember me</label>
+            </div>
+
+            <button type="submit" class="btn btn-primary w-100">SIGN IN</button>
+        </form>
+
+        <p class="ap-auth-footer mt-4">
+            Don't have an account?
+            <a asp-action="Register" asp-route-returnUrl="@Model.ReturnUrl">CREATE ONE</a>
+        </p>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

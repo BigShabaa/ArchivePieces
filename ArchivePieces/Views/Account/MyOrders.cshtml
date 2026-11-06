@@ -1,0 +1,58 @@
+@model List<ArchivePieces.Models.Order>
+@{
+    ViewData["Title"] = "My Orders";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container-fluid px-4 py-5">
+    <h1 class="ap-page-title mb-4">MY ORDERS</h1>
+
+    @if (!Model.Any())
+    {
+        <div class="ap-empty text-center py-5">
+            <i class="bi bi-bag fs-1 d-block mb-3"></i>
+            <p class="mb-3">You haven't placed any orders yet.</p>
+            <a asp-controller="Shop" asp-action="Index" class="btn btn-primary">START SHOPPING</a>
+        </div>
+    }
+    else
+    {
+        <div class="ap-admin-card">
+            <div class="table-responsive">
+                <table class="ap-table">
+                    <thead>
+                        <tr>
+                            <th>ORDER #</th>
+                            <th>DATE</th>
+                            <th>ITEMS</th>
+                            <th>TOTAL</th>
+                            <th>STATUS</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var o in Model)
+                        {
+                            <tr>
+                                <td class="ap-order-num-cell">@o.OrderNumber</td>
+                                <td class="ap-muted">@o.CreatedAt.ToString("dd MMM yyyy")</td>
+                                <td>@o.Items.Count item@(o.Items.Count != 1 ? "s" : "")</td>
+                                <td class="fw-600">R @o.TotalAmount.ToString("N2")</td>
+                                <td>
+                                    <span class="ap-status ap-status--@o.Status.ToString().ToLower()">
+                                        @o.Status
+                                    </span>
+                                </td>
+                                <td>
+                                    <a asp-controller="Order" asp-action="Detail"
+                                       asp-route-id="@o.Id"
+                                       class="btn btn-sm btn-outline-light">VIEW</a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
+</div>

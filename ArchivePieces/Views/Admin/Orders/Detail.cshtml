@@ -1,0 +1,132 @@
+@model ArchivePieces.ViewModels.Admin.OrderDetailViewModel
+@{
+    var o = Model.Order;
+    ViewData["Title"] = $"Order {o.OrderNumber}";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="d-flex align-items-center gap-3 mb-4">
+    <a href="/admin/orders" class="btn btn-outline-light btn-sm">← BACK</a>
+    <span class="ap-status ap-status--@o.Status.ToString().ToLower() ms-2">@o.Status</span>
+</div>
+
+<div class="row g-4">
+
+    <!-- ── ORDER ITEMS ───────────────────────────────────────────── -->
+    <div class="col-12 col-lg-7">
+        <div class="ap-admin-card mb-4">
+            <div class="ap-admin-card-header">ORDER ITEMS</div>
+            <div class="table-responsive">
+                <table class="ap-table">
+                    <thead>
+                        <tr>
+                            <th>IMAGE</th>
+                            <th>PRODUCT</th>
+                            <th>SIZE</th>
+                            <th>QTY</th>
+                            <th>UNIT PRICE</th>
+                            <th>TOTAL</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in o.Items)
+                        {
+                            <tr>
+                                <td>
+                                    @if (!string.IsNullOrEmpty(item.ImagePath))
+                                    {
+                                        <img src="@item.ImagePath" class="ap-table-thumb" alt="" />
+                                    }
+                                    else
+                                    {
+                                        <div class="ap-table-thumb-empty"><i class="bi bi-image"></i></div>
+                                    }
+                                </td>
+                                <td class="fw-600">@item.ProductName</td>
+                                <td>@item.Size</td>
+                                <td>@item.Quantity</td>
+                                <td>R @item.UnitPrice.ToString("N2")</td>
+                                <td>R @(item.UnitPrice * item.Quantity).ToString("N2")</td>
+                            </tr>
+                        }
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <td colspan="5" class="text-end fw-600">ORDER TOTAL</td>
+                            <td class="fw-600 text-accent">R @o.TotalAmount.ToString("N2")</td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+
+        <!-- Status History -->
+        <div class="ap-admin-card">
+            <div class="ap-admin-card-header">STATUS HISTORY</div>
+            <div class="p-4">
+                <div class="ap-status-timeline">
+                    @foreach (var h in o.StatusHistory.OrderByDescending(h => h.ChangedAt))
+                    {
+                        <div class="ap-timeline-item">
+                            <span class="ap-status ap-status--@h.Status.ToString().ToLower()">@h.Status</span>
+                            <span class="ap-muted small ms-3">
+                                @h.ChangedAt.ToString("dd MMM yyyy HH:mm")
+                                @if (!string.IsNullOrEmpty(h.ChangedBy))
+                                {
+                                    <span>— @h.ChangedBy</span>
+                                }
+                            </span>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── RIGHT SIDEBAR ─────────────────────────────────────────── -->
+    <div class="col-12 col-lg-5">
+
+        <!-- Update Status -->
+        <div class="ap-admin-card mb-4">
+            <div class="ap-admin-card-header">UPDATE STATUS</div>
+            <div class="p-4">
+                <form asp-controller="AdminOrder" asp-action="UpdateStatus"
+                      asp-route-id="@o.Id" method="post">
+                    @Html.AntiForgeryToken()
+                    <div class="mb-3">
+                        <label class="ap-label">NEW STATUS</label>
+                        <select name="status" class="ap-select ap-input">
+                            @foreach (var s in Model.AvailableStatuses)
+                            {
+                                var isSelected = o.Status == s;
+                                <option value="@s" selected="@isSelected">@s</option>
+                            }
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">UPDATE STATUS</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Customer Info -->
+        <div class="ap-admin-card mb-4">
+            <div class="ap-admin-card-header">CUSTOMER</div>
+            <div class="p-4">
+                <div class="ap-info-row"><span>NAME</span><span>@o.CustomerName</span></div>
+                <div class="ap-info-row"><span>EMAIL</span><span>@o.CustomerEmail</span></div>
+            </div>
+        </div>
+
+        <!-- Shipping -->
+        <div class="ap-admin-card">
+            <div class="ap-admin-card-header">SHIPPING ADDRESS</div>
+            <div class="p-4">
+                <div class="ap-muted">
+                    @o.ShippingAddress<br />
+                    @o.City, @o.PostalCode<br />
+                    @o.Country
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

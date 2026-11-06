@@ -1,0 +1,48 @@
+@model ArchivePieces.ViewModels.RegisterViewModel
+@{
+    ViewData["Title"] = "Create Account";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="ap-auth-page">
+    <div class="ap-auth-box">
+        <div class="ap-auth-brand">ARCHIVE PIECES</div>
+        <h1 class="ap-auth-title">CREATE ACCOUNT</h1>
+
+        <form asp-action="Register" method="post">
+            @Html.AntiForgeryToken()
+            <div asp-validation-summary="ModelOnly" class="ap-field-error mb-3"></div>
+
+            <div class="mb-3">
+                <label class="ap-label">FULL NAME</label>
+                <input asp-for="FullName" class="ap-input" placeholder="Your name" />
+                <span asp-validation-for="FullName" class="ap-field-error"></span>
+            </div>
+            <div class="mb-3">
+                <label class="ap-label">EMAIL</label>
+                <input asp-for="Email" class="ap-input" placeholder="your@email.com" />
+                <span asp-validation-for="Email" class="ap-field-error"></span>
+            </div>
+            <div class="mb-3">
+                <label class="ap-label">PASSWORD</label>
+                <input asp-for="Password" class="ap-input" type="password" placeholder="Min 8 characters" />
+                <span asp-validation-for="Password" class="ap-field-error"></span>
+            </div>
+            <div class="mb-4">
+                <label class="ap-label">CONFIRM PASSWORD</label>
+                <input asp-for="ConfirmPassword" class="ap-input" type="password" placeholder="Repeat password" />
+                <span asp-validation-for="ConfirmPassword" class="ap-field-error"></span>
+            </div>
+
+            <button type="submit" class="btn btn-primary w-100">CREATE ACCOUNT</button>
+        </form>
+
+        <p class="ap-auth-footer mt-4">
+            Already have an account? <a asp-action="Login">SIGN IN</a>
+        </p>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

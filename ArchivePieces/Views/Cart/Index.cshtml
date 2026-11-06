@@ -1,0 +1,91 @@
+@* Cart/Index.cshtml *@
+@model ArchivePieces.ViewModels.CartViewModel
+@{
+    ViewData["Title"] = "Cart";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container-fluid px-4 py-5">
+    <h1 class="ap-page-title mb-4">YOUR CART</h1>
+
+    @if (!Model.Cart.Items.Any())
+    {
+        <div class="ap-empty text-center py-5">
+            <i class="bi bi-bag fs-1 d-block mb-3"></i>
+            <p class="mb-3">Your cart is empty.</p>
+            <a asp-controller="Shop" asp-action="Index" class="btn btn-primary">SHOP NOW</a>
+        </div>
+    }
+    else
+    {
+        <div class="row g-5">
+            <div class="col-12 col-lg-8">
+                @foreach (var item in Model.Cart.Items)
+                {
+                    <div class="ap-cart-item">
+                        <div class="ap-cart-img-wrap">
+                            @if (!string.IsNullOrEmpty(item.ImagePath))
+                            {
+                                <img src="@item.ImagePath" alt="@item.ProductName" />
+                            }
+                            else
+                            {
+                                <div class="ap-product-img-placeholder"><i class="bi bi-image"></i></div>
+                            }
+                        </div>
+                        <div class="ap-cart-item-info">
+                            <div class="ap-cart-name">@item.ProductName</div>
+                            <div class="ap-cart-meta">SIZE: @item.Size</div>
+                            <div class="ap-cart-price">R @item.UnitPrice.ToString("N2")</div>
+                        </div>
+                        <div class="ap-cart-controls">
+                            <form asp-controller="Cart" asp-action="Update" method="post" class="ap-qty-inline">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="productId" value="@item.ProductId" />
+                                <input type="hidden" name="size" value="@item.Size" />
+                                <button type="submit" name="quantity" value="@(item.Quantity - 1)"
+                                        class="ap-qty-btn">−</button>
+                                <span class="ap-qty-display">@item.Quantity</span>
+                                <button type="submit" name="quantity" value="@(item.Quantity + 1)"
+                                        class="ap-qty-btn">+</button>
+                            </form>
+                            <div class="ap-cart-line-total">R @item.LineTotal.ToString("N2")</div>
+                            <form asp-controller="Cart" asp-action="Remove" method="post">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="productId" value="@item.ProductId" />
+                                <input type="hidden" name="size" value="@item.Size" />
+                                <button type="submit" class="ap-remove-btn"><i class="bi bi-x"></i></button>
+                            </form>
+                        </div>
+                    </div>
+                }
+            </div>
+
+            <div class="col-12 col-lg-4">
+                <div class="ap-order-summary">
+                    <div class="ap-summary-title">ORDER SUMMARY</div>
+                    <div class="ap-summary-row">
+                        <span>Subtotal</span>
+                        <span>R @Model.Cart.Subtotal.ToString("N2")</span>
+                    </div>
+                    <div class="ap-summary-row">
+                        <span>Shipping</span>
+                        <span class="text-muted">Calculated at checkout</span>
+                    </div>
+                    <div class="ap-summary-total">
+                        <span>TOTAL</span>
+                        <span>R @Model.Cart.Subtotal.ToString("N2")</span>
+                    </div>
+                    <a asp-controller="Checkout" asp-action="Index"
+                       class="btn btn-primary w-100 mt-3">
+                        PROCEED TO CHECKOUT
+                    </a>
+                    <a asp-controller="Shop" asp-action="Index"
+                       class="ap-continue-link mt-3 d-block text-center">
+                        ← CONTINUE SHOPPING
+                    </a>
+                </div>
+            </div>
+        </div>
+    }
+</div>

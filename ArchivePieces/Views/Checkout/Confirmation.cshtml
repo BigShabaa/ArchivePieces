@@ -1,0 +1,36 @@
+@* Checkout/Confirmation.cshtml *@
+@model ArchivePieces.ViewModels.OrderConfirmationViewModel
+@{
+    ViewData["Title"] = "Order Confirmed";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container-fluid px-4 py-5 text-center">
+    <div class="ap-confirm-icon"><i class="bi bi-check-circle"></i></div>
+    <h1 class="ap-page-title mt-3">ORDER CONFIRMED</h1>
+    <p class="ap-muted mt-2">Thank you. Your order has been received.</p>
+    <div class="ap-order-num">@Model.Order.OrderNumber</div>
+    <p class="ap-muted">A confirmation will be sent to <strong>@Model.Order.CustomerEmail</strong></p>
+
+    <div class="ap-confirm-items mt-5">
+        @foreach (var item in Model.Order.Items)
+        {
+            <div class="ap-confirm-row">
+                <span>@item.ProductName — @item.Size × @item.Quantity</span>
+                <span>R @item.LineTotal.ToString("N2")</span>
+            </div>
+        }
+        <div class="ap-confirm-total">
+            <span>TOTAL</span>
+            <span>R @Model.Order.TotalAmount.ToString("N2")</span>
+        </div>
+    </div>
+
+    <div class="mt-5 d-flex gap-3 justify-content-center">
+        <a asp-controller="Shop" asp-action="Index" class="btn btn-primary">CONTINUE SHOPPING</a>
+        @if (User.Identity?.IsAuthenticated == true)
+        {
+            <a asp-controller="Order" asp-action="MyOrders" class="btn btn-outline-light">MY ORDERS</a>
+        }
+    </div>
+</div>

@@ -1,0 +1,83 @@
+@model ArchivePieces.Models.Order
+@{
+    ViewData["Title"] = $"Order {Model.OrderNumber}";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container-fluid px-4 py-5">
+    <div class="d-flex align-items-center gap-3 mb-5">
+        <a asp-controller="Order" asp-action="MyOrders"
+           class="btn btn-outline-light btn-sm">← MY ORDERS</a>
+        <span class="ap-status ap-status--@Model.Status.ToString().ToLower()">@Model.Status</span>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-12 col-lg-7">
+            <div class="ap-admin-card">
+                <div class="ap-admin-card-header">
+                    ORDER @Model.OrderNumber
+                    <span class="ap-muted small">@Model.CreatedAt.ToString("dd MMM yyyy")</span>
+                </div>
+                <div class="table-responsive">
+                    <table class="ap-table">
+                        <thead>
+                            <tr>
+                                <th>PRODUCT</th>
+                                <th>SIZE</th>
+                                <th>QTY</th>
+                                <th>PRICE</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model.Items)
+                            {
+                                <tr>
+                                    <td class="fw-600">@item.ProductName</td>
+                                    <td>@item.Size</td>
+                                    <td>@item.Quantity</td>
+                                    <td>R @(item.UnitPrice * item.Quantity).ToString("N2")</td>
+                                </tr>
+                            }
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <td colspan="3" class="text-end fw-600">TOTAL</td>
+                                <td class="fw-600 text-accent">R @Model.TotalAmount.ToString("N2")</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-lg-5">
+            <div class="ap-admin-card mb-4">
+                <div class="ap-admin-card-header">SHIPPING ADDRESS</div>
+                <div class="p-4 ap-muted">
+                    @Model.ShippingAddress<br />
+                    @Model.City, @Model.PostalCode<br />
+                    @Model.Country
+                </div>
+            </div>
+
+            <div class="ap-admin-card">
+                <div class="ap-admin-card-header">ORDER TIMELINE</div>
+                <div class="p-4">
+                    <div class="ap-status-timeline">
+                        @foreach (var h in Model.StatusHistory.OrderByDescending(h => h.ChangedAt))
+                        {
+                            <div class="ap-timeline-item">
+                                <span class="ap-status ap-status--@h.Status.ToString().ToLower()">
+                                    @h.Status
+                                </span>
+                                <span class="ap-muted small ms-3">
+                                    @h.ChangedAt.ToString("dd MMM yyyy HH:mm")
+                                </span>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

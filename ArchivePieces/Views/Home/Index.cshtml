@@ -1,0 +1,86 @@
+@model List<ArchivePieces.Models.Product>
+@{
+    ViewData["Title"] = null;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<!-- ── HERO ─────────────────────────────────────────────────────── -->
+<section class="ap-hero">
+    <div class="ap-hero-inner">
+        <h1 class="ap-hero-title">ARCHIVE PIECES</h1>
+        <p class="ap-hero-sub">— THE ARCHIVE IS OPEN —</p>
+        <a asp-controller="Shop" asp-action="Index" class="btn btn-primary ap-btn-lg mt-4">
+            SHOP NOW
+        </a>
+    </div>
+</section>
+
+<!-- ── CATEGORY STRIP ────────────────────────────────────────────── -->
+@if (ViewBag.Categories != null)
+{
+    <section class="ap-category-strip">
+        <div class="ap-category-scroll">
+            <a asp-controller="Shop" asp-action="Index" class="ap-cat-pill active">ALL</a>
+            @foreach (var cat in (List<ArchivePieces.Models.Category>)ViewBag.Categories)
+            {
+                <a asp-controller="Shop" asp-action="Index"
+                   asp-route-category="@cat.Slug"
+                   class="ap-cat-pill">@cat.Name</a>
+            }
+        </div>
+    </section>
+}
+
+<!-- ── NEW IN ────────────────────────────────────────────────────── -->
+<section class="ap-section">
+    <div class="container-fluid px-4">
+        <div class="ap-section-header">
+            <h2 class="ap-section-title">NEW IN</h2>
+            <a asp-controller="Shop" asp-action="Index" class="ap-section-link">
+                VIEW ALL <i class="bi bi-arrow-right"></i>
+            </a>
+        </div>
+
+        @if (!Model.Any())
+        {
+            <p class="ap-empty">No products yet. Check back soon.</p>
+        }
+        else
+        {
+            <div class="ap-product-grid">
+                @foreach (var p in Model)
+                {
+                    <a asp-controller="Product" asp-action="Detail"
+                       asp-route-slug="@p.Slug" class="ap-product-card">
+                        <div class="ap-product-img-wrap">
+                            @if (!string.IsNullOrEmpty(p.PrimaryImagePath))
+                            {
+                                <img src="@p.PrimaryImagePath" alt="@p.Name"
+                                     class="ap-product-img" loading="lazy" />
+                            }
+                            else
+                            {
+                                <div class="ap-product-img-placeholder">
+                                    <i class="bi bi-image"></i>
+                                </div>
+                            }
+
+                            @if (p.IsSoldOut)
+                            {
+                                <span class="ap-badge ap-badge--sold">SOLD OUT</span>
+                            }
+                            else if (p.IsNew)
+                            {
+                                <span class="ap-badge ap-badge--new">NEW</span>
+                            }
+                        </div>
+                        <div class="ap-product-info">
+                            <span class="ap-product-name">@p.Name</span>
+                            <span class="ap-product-price">R @p.Price.ToString("N2")</span>
+                        </div>
+                    </a>
+                }
+            </div>
+        }
+    </div>
+</section>

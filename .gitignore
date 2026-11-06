@@ -1,0 +1,23 @@
+# Build output
+[Bb]in/
+[Oo]bj/
+
+# Visual Studio
+.vs/
+*.user
+*.suo
+*.pubxml.user
+
+# Secrets / environment-specific config
+appsettings.Production.json
+appsettings.*.local.json
+
+# Claude Code local settings
+.claude/settings.local.json
+
+# User-uploaded content
+ArchivePieces/wwwroot/uploads/
+
+# Azure publish profiles (contain subscription IDs)
+ArchivePieces/Properties/PublishProfiles/
+ArchivePieces/Properties/ServiceDependencies/
